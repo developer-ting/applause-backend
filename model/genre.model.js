@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
-export const genreSchema = new mongoose.Schema({
+export const GenreSchema = new mongoose.Schema({
   title: {
     type: String,
     // type: { name: String, type: String },
   },
 });
 
-export default mongoose.model.Genre || mongoose.model("Genre", genreSchema);
+export default mongoose.model.Genre || mongoose.model("Genre", GenreSchema);
