@@ -4,8 +4,8 @@ import LanguageModel from "../model/language.model.js";
 import PlatformModel from "../model/platform.model.js";
 import SkillsModel from "../model/skills.model.js";
 
-// ===================== GENRE ===================
-
+// GENRE
+// ===================== POST ===================
 export async function createGenre(req, res) {
   try {
     const response = req.body;
@@ -16,7 +16,7 @@ export async function createGenre(req, res) {
     return res.status(500).json({ msg: "message not delivered" });
   }
 }
-
+// ===================== GET ===================
 export async function fetchGenre(req, res) {
   try {
     const genres = await GenreModel.find();
@@ -27,8 +27,8 @@ export async function fetchGenre(req, res) {
   }
 }
 
-// ===================== Language ===================
-
+// Language
+// ===================== POST ===================
 export async function createLanguage(req, res) {
   try {
     const response = req.body;
@@ -39,7 +39,7 @@ export async function createLanguage(req, res) {
     return res.status(500).json({ msg: "message not delivered" });
   }
 }
-
+// ===================== GET ===================
 export async function fetchLanguage(req, res) {
   try {
     const language = await LanguageModel.find();
@@ -50,8 +50,8 @@ export async function fetchLanguage(req, res) {
   }
 }
 
-// ===================== Platform ===================
-
+// Platform
+// ===================== POST ===================
 export async function createPlatform(req, res) {
   try {
     const response = req.body;
@@ -62,7 +62,7 @@ export async function createPlatform(req, res) {
     return res.status(500).json({ msg: "message not delivered" });
   }
 }
-
+// ===================== GET ===================
 export async function fetchPlatform(req, res) {
   try {
     const platform = await PlatformModel.find();
@@ -73,8 +73,8 @@ export async function fetchPlatform(req, res) {
   }
 }
 
-// ===================== Skills ===================
-
+// Skills
+// ===================== POST ===================
 export async function createSkills(req, res) {
   try {
     const response = req.body;
@@ -85,7 +85,7 @@ export async function createSkills(req, res) {
     return res.status(500).json({ msg: "message not delivered" });
   }
 }
-
+// ===================== GET ===================
 export async function fetchSkills(req, res) {
   try {
     const skills = await SkillsModel.find();
