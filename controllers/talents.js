@@ -1,5 +1,6 @@
 // Models
 import TalentModel from "../model/talent.model.js";
+import LanguageModel from "../model/language.model.js";
 import { defaultConfig } from "../utils/index.js";
 
 // ===================== GET ===================
@@ -8,12 +9,57 @@ import { defaultConfig } from "../utils/index.js";
  * @param : {
   "limit" : 10,
   "skip" : 0,
+  "language": "English",
+  "gender": "Female",
+  "height": "5-6"
 }
 */
 export async function fetchAllTalents(req, res) {
   try {
-    const { limit, skip } = req.query;
-    const talents = await TalentModel.find()
+    const { limit, skip, language, projects, gender, height } = req.query;
+    let query = {};
+
+    if (language) {
+      const languageArr = language.split(",");
+      // Fetch language document by title
+      const selectedLanguages = await LanguageModel.find({
+        title: { $in: languageArr },
+      });
+
+      if (!selectedLanguages) {
+        return res.status(404).json({ msg: "Language not found" });
+      }
+
+      const languageIds = selectedLanguages.map((language) => language._id);
+
+      // Add condition to the query object to filter talents by languageIds
+      if (languageIds.length > 0) {
+        query.languageSpoken = { $in: languageIds };
+      }
+    }
+
+    if (gender) {
+      query.gender = gender;
+    }
+
+    if (height) {
+      const heightRange = height.split("-");
+
+      if (heightRange.length === 1) {
+        query.height = Number(heightRange[0]);
+      } else {
+        query.height = {
+          $gte: Number(heightRange[0]),
+          $lte: Number(heightRange[1]),
+        };
+      }
+    }
+
+    if (projects) {
+      query.projects = projects;
+    }
+
+    const talents = await TalentModel.find(query)
       .limit(limit || defaultConfig.fetchLimit)
       .skip(skip || 0);
 
