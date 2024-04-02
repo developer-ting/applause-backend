@@ -68,7 +68,7 @@ export async function fetchOneTalent(req, res) {
 // ===================== POST ===================
 
 /** POST: http://localhost:8080/api/talents 
- * @param : {
+ * @body : {
     "name": "test",
     "birthYear": 1980,
     "thumbnail": "thumbnail.com/img",
@@ -102,7 +102,7 @@ export async function createTalent(req, res) {
 // ===================== PUT ===================
 
 /** PUT: http://localhost:8080/api/talents/asd1d
- * @param : {
+ * @body : {
     "name": "test",
     "birthYear": 1980,
     "thumbnail": "thumbnail.com/img",

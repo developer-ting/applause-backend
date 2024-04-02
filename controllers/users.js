@@ -52,7 +52,7 @@ export async function fetchOneUser(req, res) {
 // ===================== PUT ===================
 
 /** PUT: http://localhost:8080/api/user
- * @param : {
+ * @body : {
     "firstname": "Ting",
     "lastname": "Works",
     "profile": "profile.com/img",
