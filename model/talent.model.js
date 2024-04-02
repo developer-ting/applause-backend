@@ -10,6 +10,7 @@ export const TalentSchema = new mongoose.Schema(
     height: { type: Number, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
+    withApplause: { type: String, required: true, enum: ["True", "False"] },
     languageSpoken: { type: [String], ref: "Language" },
     projects: { type: [String], ref: "Project" },
     profilePictures: { type: [String] },
