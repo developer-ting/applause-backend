@@ -96,7 +96,7 @@ export async function login(req, res) {
             if (!passwordCheck)
               return res.status(400).send({ error: "Don't have password" });
 
-            // crate jwt token ( json web token )
+            // Create jwt token ( json web token )
             const token = jwt.sign(
               {
                 userId: user._id,
