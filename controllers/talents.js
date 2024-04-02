@@ -11,12 +11,13 @@ import { defaultConfig } from "../utils/index.js";
   "skip" : 0,
   "language": "English",
   "gender": "Female",
-  "height": "5-6"
+  "height": "5-6",
+  "age": "2000-2010"
 }
 */
 export async function fetchAllTalents(req, res) {
   try {
-    const { limit, skip, language, projects, gender, height } = req.query;
+    const { limit, skip, language, projects, gender, height, age } = req.query;
     let query = {};
 
     if (language) {
@@ -51,6 +52,19 @@ export async function fetchAllTalents(req, res) {
         query.height = {
           $gte: Number(heightRange[0]),
           $lte: Number(heightRange[1]),
+        };
+      }
+    }
+
+    if (age) {
+      const ageRange = age.split("-");
+
+      if (ageRange.length === 1) {
+        query.birthYear = Number(ageRange[0]);
+      } else {
+        query.birthYear = {
+          $gte: Number(ageRange[0]),
+          $lte: Number(ageRange[1]),
         };
       }
     }
