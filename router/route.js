@@ -5,6 +5,7 @@ const router = Router();
 import * as controller from "../controllers/appController.js";
 import * as authController from "../controllers/auth.js";
 import * as filtersController from "../controllers/filters.js";
+import * as projectsController from "../controllers/projects.js";
 
 // AUTH
 router.route("/register").post(authController.register); // register user
@@ -21,5 +22,11 @@ router.route("/genre").get(filtersController.fetchGenre); // Genre
 router.route("/language").get(filtersController.fetchLanguage); // Language
 router.route("/platform").get(filtersController.fetchPlatform); // Platform
 router.route("/skills").get(filtersController.fetchSkills); // Skills
+
+// Projects - POST
+router.route("/project").post(projectsController.createProjects); // Projects
+
+// Projects - GET
+router.route("/project").get(projectsController.fetchProjects); // Projects
 
 export default router;
