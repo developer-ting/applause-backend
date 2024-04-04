@@ -3,6 +3,16 @@ import TalentModel from "../model/talent.model.js";
 import LanguageModel from "../model/language.model.js";
 import { defaultConfig } from "../utils/index.js";
 
+// Plugins
+import { v2 as cloudinary } from "cloudinary";
+cloudinary.config({
+  cloud_name: "di6se6av1",
+  api_key: "929558667891945",
+  api_secret: "8HyKQoZ1XZjAPipO_H6aD81Lrbc",
+});
+
+// Utils
+
 // ===================== GET ===================
 
 /** GET: http://localhost:8080/api/talents 
@@ -136,7 +146,8 @@ export async function fetchOneTalent(req, res) {
     "gender": "Female",
     "height": 5.1,
     "email": "test@gmail.com",
-    "phone": "1234567890"
+    "phone": "1234567890",
+    "withApplause": "True"
 }
 */
 export async function createTalent(req, res) {
@@ -145,15 +156,29 @@ export async function createTalent(req, res) {
 
     const { name } = req.body;
 
+    let media = {};
+
     const existingTalent = await TalentModel.findOne({ name });
 
     if (existingTalent) {
       return res.status(409).json({ error: "Talent already exists" });
     }
 
-    await TalentModel.create(data);
+    if (req.files) {
+      console.log("asd");
+      if (req.files.thumbnail) {
+        const imgObj = req.files.thumbnail;
+        const base64Data = imgObj.data.toString("base64");
+        const dataUri = `data:${imgObj.mimetype};base64,${base64Data}`;
+        const result = await cloudinary.uploader.upload(dataUri);
+        media.thumbnail = result.url;
+        console.log("asd", result);
+      }
+    }
 
-    return res.status(200).json({ data });
+    await TalentModel.create({ ...data, ...media });
+
+    return res.status(200).json({ data, ...media });
   } catch (error) {
     return res.status(500).json({ msg: "Something went wrong!", error });
   }
