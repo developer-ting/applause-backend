@@ -1,15 +1,9 @@
 // Models
 import TalentModel from "../model/talent.model.js";
 import LanguageModel from "../model/language.model.js";
-import { defaultConfig } from "../utils/index.js";
+import { defaultConfig, storeMediaToDB } from "../utils/index.js";
 
 // Plugins
-import { v2 as cloudinary } from "cloudinary";
-cloudinary.config({
-  cloud_name: "di6se6av1",
-  api_key: "929558667891945",
-  api_secret: "8HyKQoZ1XZjAPipO_H6aD81Lrbc",
-});
 
 // Utils
 
@@ -165,20 +159,19 @@ export async function createTalent(req, res) {
     }
 
     if (req.files) {
-      console.log("asd");
       if (req.files.thumbnail) {
-        const imgObj = req.files.thumbnail;
-        const base64Data = imgObj.data.toString("base64");
-        const dataUri = `data:${imgObj.mimetype};base64,${base64Data}`;
-        const result = await cloudinary.uploader.upload(dataUri);
+        const result = await storeMediaToDB(req.files.thumbnail);
         media.thumbnail = result.url;
-        console.log("asd", result);
+      }
+      if (req.files.introVideo) {
+        const result = await storeMediaToDB(req.files.introVideo);
+        media.introVideo = result.url;
       }
     }
 
     await TalentModel.create({ ...data, ...media });
 
-    return res.status(200).json({ data, ...media });
+    return res.status(200).json({ ...data, ...media });
   } catch (error) {
     return res.status(500).json({ msg: "Something went wrong!", error });
   }
