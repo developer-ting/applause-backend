@@ -37,11 +37,9 @@ router.route("/user").put(Auth, usersController.updateOneUser); // Update User
 router.route("/user").delete(Auth, usersController.deleteOneUser); // All User
 
 // Talents - GET
-router.route("/talents").get(talentsController.fetchAllTalents); // All Talents
-router
-  .route("/talentfilters")
-  .get(talentsController.fetchAllTalentsOnlyNameAndId); // All Talents Only Names
-router.route("/talents/:name").get(talentsController.fetchOneTalent); // One Talent
+router.route("/talents").get(talentsController.getTalents); // All Talents
+router.route("/talentfilters").get(talentsController.getTalentsNameAndId); // All Talents Only Names
+router.route("/talents/:name").get(talentsController.getTalent); // One Talent
 
 // Talents - POST
 router.route("/talents").post(talentsController.createTalent); // All Talents

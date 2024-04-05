@@ -1,7 +1,12 @@
 // Models
 import TalentModel from "../model/talent.model.js";
 import LanguageModel from "../model/language.model.js";
-import { defaultConfig, storeMediaToDB } from "../utils/index.js";
+import {
+  defaultConfig,
+  deleteMedia,
+  deleteMultipleMedia,
+  storeMediaToDB,
+} from "../utils/index.js";
 
 // Plugins
 
@@ -19,7 +24,7 @@ import { defaultConfig, storeMediaToDB } from "../utils/index.js";
   "age": "2000-2010"
 }
 */
-export async function fetchAllTalents(req, res) {
+export async function getTalents(req, res) {
   try {
     const { limit, skip, language, projects, gender, height, age } = req.query;
     let query = {};
@@ -94,7 +99,7 @@ export async function fetchAllTalents(req, res) {
   "skip" : 0,
 }
 */
-export async function fetchAllTalentsOnlyNameAndId(req, res) {
+export async function getTalentsNameAndId(req, res) {
   try {
     const { limit, skip } = req.query;
     const talents = await TalentModel.find()
@@ -112,7 +117,7 @@ export async function fetchAllTalentsOnlyNameAndId(req, res) {
 /** GET: http://localhost:8080/api/talents/asd2d
  * @param : {}
  */
-export async function fetchOneTalent(req, res) {
+export async function getTalent(req, res) {
   try {
     const { name } = req.params;
 
@@ -145,13 +150,13 @@ export async function fetchOneTalent(req, res) {
 }
 */
 export async function createTalent(req, res) {
+  const data = req.body;
+
+  const { name } = req.body;
+
+  let media = {};
+
   try {
-    const data = req.body;
-
-    const { name } = req.body;
-
-    let media = {};
-
     const existingTalent = await TalentModel.findOne({ name });
 
     if (existingTalent) {
@@ -159,11 +164,18 @@ export async function createTalent(req, res) {
     }
 
     if (req.files) {
-      if (req.files.thumbnail) {
+      if (req.files.thumbnail && req.files.introVideo) {
+        await Promise.all([
+          storeMediaToDB(req.files.thumbnail),
+          storeMediaToDB(req.files.introVideo),
+        ]).then((values) => {
+          media.thumbnail = values[0].url;
+          media.introVideo = values[1].url;
+        });
+      } else if (req.files.thumbnail) {
         const result = await storeMediaToDB(req.files.thumbnail);
         media.thumbnail = result.url;
-      }
-      if (req.files.introVideo) {
+      } else if (req.files.introVideo) {
         const result = await storeMediaToDB(req.files.introVideo);
         media.introVideo = result.url;
       }
@@ -196,6 +208,8 @@ export async function updateOneTalent(req, res) {
     const { name } = req.params;
     const data = req.body;
 
+    let media = {};
+
     const talent = await TalentModel.findOne({ name });
 
     if (!talent) {
@@ -204,7 +218,28 @@ export async function updateOneTalent(req, res) {
         .json({ error: "Talent not found!, Please provide correct Name" });
     }
 
-    await TalentModel.updateOne({ name }, data);
+    if (req.files) {
+      if (req.files.thumbnail && req.files.introVideo) {
+        await deleteMultipleMedia([talent.thumbnail, talent.introVideo]);
+        await Promise.all([
+          storeMediaToDB(req.files.thumbnail),
+          storeMediaToDB(req.files.introVideo),
+        ]).then((values) => {
+          media.thumbnail = values[0].url;
+          media.introVideo = values[1].url;
+        });
+      } else if (req.files.thumbnail) {
+        await deleteMedia(talent.thumbnail);
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      } else if (req.files.introVideo) {
+        await deleteMedia(talent.introVideo);
+        const result = await storeMediaToDB(req.files.introVideo);
+        media.introVideo = result.url;
+      }
+    }
+
+    await TalentModel.updateOne({ name }, { ...data, ...media });
 
     return res.status(200).json({ msg: `Record updated for ${name}` });
   } catch (error) {
@@ -229,6 +264,14 @@ export async function deleteOneTalent(req, res) {
     }
 
     await TalentModel.findOne({ name }).deleteOne();
+
+    if (talent.thumbnail && talent.introVideo) {
+      await deleteMultipleMedia([talent.thumbnail, talent.introVideo]);
+    } else if (talent.thumbnail) {
+      await deleteMedia(talent.thumbnail);
+    } else if (talent.introVideo) {
+      await deleteMedia(talent.introVideo);
+    }
 
     return res.status(200).json({ msg: `Entry for ${name} is removed` });
   } catch (error) {
