@@ -10,6 +10,7 @@ import * as authController from "../controllers/auth.js";
 import * as filtersController from "../controllers/filters.js";
 import * as talentsController from "../controllers/talents.js";
 import * as usersController from "../controllers/users.js";
+import * as projectsController from "../controllers/projects.js";
 
 // AUTH
 router.route("/register").post(authController.register); // register user
@@ -51,5 +52,49 @@ router.route("/talents/:name").delete(talentsController.deleteOneTalent); // Del
 
 // Talents - PUT
 router.route("/talents/:name").put(talentsController.updateOneTalent); // Update One Talent
+
+// ===========================  Project Router ================================
+
+// Projects - POST
+router.route("/project").post(projectsController.createProjects); // Projects
+
+// Projects - GET
+router.route("/project").get(projectsController.fetchProjects); // Get project All
+
+router.route("/project/:title").get(projectsController.fetchProject); // One project
+
+router
+  .route("/projectfilters")
+  .get(projectsController.fetchAllProjectsOnlyNameAndId); // All project Only Names
+
+// Project - PUT
+router.route("/project/:title").put(projectsController.updateOneProject); // Update One project
+
+// Project - DELETE
+router.route("/project/:title").delete(projectsController.deleteOneProject); // Delete One project
+
+// Genre - PUT
+router.route("/genre/:title").put(filtersController.updateGenre); // Update One genre
+
+// Genre - Delete
+router.route("/genre/:title").delete(filtersController.deleteGenre); // Delete One genre
+
+// language - PUT
+router.route("/language/:title").put(filtersController.updateLanguage); // Update One language
+
+// language - Delete
+router.route("/language/:title").delete(filtersController.deleteLanguage); // Delete One language
+
+// platform - PUT
+router.route("/platform/:title").put(filtersController.updatePlatform); // Update One platform
+
+// platform - Delete
+router.route("/platform/:title").delete(filtersController.deletePlatform); // Delete One platform
+
+// skills - PUT
+router.route("/skills/:title").put(filtersController.updateSkills); // Update One skills
+
+// skills - Delete
+router.route("/skills/:title").delete(filtersController.deleteSkills); // Delete One skills
 
 export default router;
