@@ -1,4 +1,5 @@
 import express from "express";
+import fileUpload from "express-fileupload";
 import cors from "cors";
 import morgan from "morgan";
 import connect from "./db/connection.js";
@@ -11,6 +12,7 @@ app.use(express.json());
 app.use(cors());
 app.use(morgan("tiny"));
 app.disable("x-powered-by"); //less hackers know about our stack
+app.use(fileUpload());
 
 const port = 8080;
 
