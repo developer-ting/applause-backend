@@ -12,89 +12,87 @@ import * as talentsController from "../controllers/talents.js";
 import * as usersController from "../controllers/users.js";
 import * as projectsController from "../controllers/projects.js";
 
-// AUTH
+// ===========================  AUTH Routes ================================
+
 router.route("/register").post(authController.register); // register user
 router.route("/login").post(controller.verifyUser, authController.login); // login user
 
-// Filters - POST
-router.route("/genre").post(filtersController.createGenre); // Genre
-router.route("/language").post(filtersController.createLanguage); // Language
-router.route("/platform").post(filtersController.createPlatform); // Platform
-router.route("/skills").post(filtersController.createSkills); // Skills
+// ===========================  Filter Routes ================================
 
-// Filters - GET
-router.route("/genre").get(filtersController.fetchGenre); // Genre
-router.route("/language").get(filtersController.fetchLanguage); // Language
-router.route("/platform").get(filtersController.fetchPlatform); // Platform
-router.route("/skills").get(filtersController.fetchSkills); // Skills
+// Genre
+// POST
+router.route("/genre").post(filtersController.createGenre); // Create Genre
+// PUT
+router.route("/genre/:title").put(filtersController.updateGenre); // Update One genre
+// GET
+router.route("/genre").get(filtersController.fetchGenre); // Get All Genre
+// Delete
+router.route("/genre/:title").delete(filtersController.deleteGenre); // Delete One genre
 
-// User - GET
+// Language
+// POST
+router.route("/language").post(filtersController.createLanguage); // Create Language
+// PUT
+router.route("/language/:title").put(filtersController.updateLanguage); // Update One language
+// GET
+router.route("/language").get(filtersController.fetchLanguage); // Get All Language
+// Delete
+router.route("/language/:title").delete(filtersController.deleteLanguage); // Delete One language
+
+// Platform
+// POST
+router.route("/platform").post(filtersController.createPlatform); // Create Platform
+// PUT
+router.route("/platform/:title").put(filtersController.updatePlatform); // Update One platform
+// GET
+router.route("/platform").get(filtersController.fetchPlatform); // Get All Platform
+// Delete
+router.route("/platform/:title").delete(filtersController.deletePlatform); // Delete One platform
+
+// Skills
+// POST
+router.route("/skills").post(filtersController.createSkills); // Create Skill
+// PUT
+router.route("/skills/:title").put(filtersController.updateSkills); // Update One skills
+// GET
+router.route("/skills").get(filtersController.fetchSkills); // Get All Skills
+// Delete
+router.route("/skills/:title").delete(filtersController.deleteSkills); // Delete One skills
+
+// ===========================  User Routes ================================
+// GET
 router.route("/user").get(Auth, usersController.fetchOneUser); // Get User
-
-// User - PUT
+// PUT
 router.route("/user").put(Auth, usersController.updateOneUser); // Update User
-
-// User - DELETE
+// DELETE
 router.route("/user").delete(Auth, usersController.deleteOneUser); // All User
 
-// Talents - GET
-router.route("/talents").get(talentsController.fetchAllTalents); // All Talents
-router
-  .route("/talentfilters")
-  .get(talentsController.fetchAllTalentsOnlyNameAndId); // All Talents Only Names
-router.route("/talents/:name").get(talentsController.fetchOneTalent); // One Talent
+// ===========================  Talent Routes ================================
 
-// Talents - POST
+// GET
+router.route("/talents").get(talentsController.getTalents); // All Talents
+router.route("/talentfilters").get(talentsController.getTalentsNameAndId); // All Talents Only Names
+router.route("/talents/:name").get(talentsController.getTalent); // One Talent
+// POST
 router.route("/talents").post(talentsController.createTalent); // All Talents
-
-// Talents - DELETE
+// DELETE
 router.route("/talents/:name").delete(talentsController.deleteOneTalent); // Delete One Talent
-
-// Talents - PUT
+// PUT
 router.route("/talents/:name").put(talentsController.updateOneTalent); // Update One Talent
 
-// ===========================  Project Router ================================
+// ===========================  Project Routes ================================
 
-// Projects - POST
+// POST
 router.route("/project").post(projectsController.createProjects); // Projects
-
-// Projects - GET
+// GET
 router.route("/project").get(projectsController.fetchProjects); // Get project All
-
 router.route("/project/:title").get(projectsController.fetchProject); // One project
-
 router
   .route("/projectfilters")
   .get(projectsController.fetchAllProjectsOnlyNameAndId); // All project Only Names
-
-// Project - PUT
+// PUT
 router.route("/project/:title").put(projectsController.updateOneProject); // Update One project
-
-// Project - DELETE
+// DELETE
 router.route("/project/:title").delete(projectsController.deleteOneProject); // Delete One project
-
-// Genre - PUT
-router.route("/genre/:title").put(filtersController.updateGenre); // Update One genre
-
-// Genre - Delete
-router.route("/genre/:title").delete(filtersController.deleteGenre); // Delete One genre
-
-// language - PUT
-router.route("/language/:title").put(filtersController.updateLanguage); // Update One language
-
-// language - Delete
-router.route("/language/:title").delete(filtersController.deleteLanguage); // Delete One language
-
-// platform - PUT
-router.route("/platform/:title").put(filtersController.updatePlatform); // Update One platform
-
-// platform - Delete
-router.route("/platform/:title").delete(filtersController.deletePlatform); // Delete One platform
-
-// skills - PUT
-router.route("/skills/:title").put(filtersController.updateSkills); // Update One skills
-
-// skills - Delete
-router.route("/skills/:title").delete(filtersController.deleteSkills); // Delete One skills
 
 export default router;

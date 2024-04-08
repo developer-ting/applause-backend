@@ -1,6 +1,16 @@
 // Models
 import TalentModel from "../model/talent.model.js";
-import { defaultConfig } from "../utils/index.js";
+import LanguageModel from "../model/language.model.js";
+import {
+  defaultConfig,
+  deleteMedia,
+  deleteMultipleMedia,
+  storeMediaToDB,
+} from "../utils/index.js";
+
+// Plugins
+
+// Utils
 
 // ===================== GET ===================
 
@@ -8,12 +18,71 @@ import { defaultConfig } from "../utils/index.js";
  * @param : {
   "limit" : 10,
   "skip" : 0,
+  "language": "English",
+  "gender": "Female",
+  "height": "5-6",
+  "age": "2000-2010"
 }
 */
-export async function fetchAllTalents(req, res) {
+export async function getTalents(req, res) {
   try {
-    const { limit, skip } = req.query;
-    const talents = await TalentModel.find()
+    const { limit, skip, language, projects, gender, height, age } = req.query;
+    let query = {};
+
+    if (language) {
+      const languageArr = language.split(",");
+      // Fetch language document by title
+      const selectedLanguages = await LanguageModel.find({
+        title: { $in: languageArr },
+      });
+
+      if (!selectedLanguages) {
+        return res.status(404).json({ msg: "Language not found" });
+      }
+
+      const languageIds = selectedLanguages.map((language) => language._id);
+
+      // Add condition to the query object to filter talents by languageIds
+      if (languageIds.length > 0) {
+        query.languageSpoken = { $in: languageIds };
+      }
+    }
+
+    if (gender) {
+      query.gender = gender;
+    }
+
+    if (height) {
+      const heightRange = height.split("-");
+
+      if (heightRange.length === 1) {
+        query.height = Number(heightRange[0]);
+      } else {
+        query.height = {
+          $gte: Number(heightRange[0]),
+          $lte: Number(heightRange[1]),
+        };
+      }
+    }
+
+    if (age) {
+      const ageRange = age.split("-");
+
+      if (ageRange.length === 1) {
+        query.birthYear = Number(ageRange[0]);
+      } else {
+        query.birthYear = {
+          $gte: Number(ageRange[0]),
+          $lte: Number(ageRange[1]),
+        };
+      }
+    }
+
+    if (projects) {
+      query.projects = projects;
+    }
+
+    const talents = await TalentModel.find(query)
       .limit(limit || defaultConfig.fetchLimit)
       .skip(skip || 0);
 
@@ -30,7 +99,7 @@ export async function fetchAllTalents(req, res) {
   "skip" : 0,
 }
 */
-export async function fetchAllTalentsOnlyNameAndId(req, res) {
+export async function getTalentsNameAndId(req, res) {
   try {
     const { limit, skip } = req.query;
     const talents = await TalentModel.find()
@@ -48,7 +117,7 @@ export async function fetchAllTalentsOnlyNameAndId(req, res) {
 /** GET: http://localhost:8080/api/talents/asd2d
  * @param : {}
  */
-export async function fetchOneTalent(req, res) {
+export async function getTalent(req, res) {
   try {
     const { name } = req.params;
 
@@ -68,7 +137,7 @@ export async function fetchOneTalent(req, res) {
 // ===================== POST ===================
 
 /** POST: http://localhost:8080/api/talents 
- * @param : {
+ * @body : {
     "name": "test",
     "birthYear": 1980,
     "thumbnail": "thumbnail.com/img",
@@ -76,24 +145,45 @@ export async function fetchOneTalent(req, res) {
     "gender": "Female",
     "height": 5.1,
     "email": "test@gmail.com",
-    "phone": "1234567890"
+    "phone": "1234567890",
+    "withApplause": "True"
 }
 */
 export async function createTalent(req, res) {
+  const data = req.body;
+
+  const { name } = req.body;
+
+  let media = {};
+
   try {
-    const data = req.body;
-
-    const { name } = req.body;
-
     const existingTalent = await TalentModel.findOne({ name });
 
     if (existingTalent) {
       return res.status(409).json({ error: "Talent already exists" });
     }
 
-    await TalentModel.create(data);
+    if (req.files) {
+      if (req.files.thumbnail && req.files.introVideo) {
+        await Promise.all([
+          storeMediaToDB(req.files.thumbnail),
+          storeMediaToDB(req.files.introVideo),
+        ]).then((values) => {
+          media.thumbnail = values[0].url;
+          media.introVideo = values[1].url;
+        });
+      } else if (req.files.thumbnail) {
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      } else if (req.files.introVideo) {
+        const result = await storeMediaToDB(req.files.introVideo);
+        media.introVideo = result.url;
+      }
+    }
 
-    return res.status(200).json({ data });
+    await TalentModel.create({ ...data, ...media });
+
+    return res.status(200).json({ ...data, ...media });
   } catch (error) {
     return res.status(500).json({ msg: "Something went wrong!", error });
   }
@@ -102,7 +192,7 @@ export async function createTalent(req, res) {
 // ===================== PUT ===================
 
 /** PUT: http://localhost:8080/api/talents/asd1d
- * @param : {
+ * @body : {
     "name": "test",
     "birthYear": 1980,
     "thumbnail": "thumbnail.com/img",
@@ -118,6 +208,8 @@ export async function updateOneTalent(req, res) {
     const { name } = req.params;
     const data = req.body;
 
+    let media = {};
+
     const talent = await TalentModel.findOne({ name });
 
     if (!talent) {
@@ -126,7 +218,28 @@ export async function updateOneTalent(req, res) {
         .json({ error: "Talent not found!, Please provide correct Name" });
     }
 
-    await TalentModel.updateOne({ name }, data);
+    if (req.files) {
+      if (req.files.thumbnail && req.files.introVideo) {
+        await deleteMultipleMedia([talent.thumbnail, talent.introVideo]);
+        await Promise.all([
+          storeMediaToDB(req.files.thumbnail),
+          storeMediaToDB(req.files.introVideo),
+        ]).then((values) => {
+          media.thumbnail = values[0].url;
+          media.introVideo = values[1].url;
+        });
+      } else if (req.files.thumbnail) {
+        await deleteMedia(talent.thumbnail);
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      } else if (req.files.introVideo) {
+        await deleteMedia(talent.introVideo);
+        const result = await storeMediaToDB(req.files.introVideo);
+        media.introVideo = result.url;
+      }
+    }
+
+    await TalentModel.updateOne({ name }, { ...data, ...media });
 
     return res.status(200).json({ msg: `Record updated for ${name}` });
   } catch (error) {
@@ -151,6 +264,14 @@ export async function deleteOneTalent(req, res) {
     }
 
     await TalentModel.findOne({ name }).deleteOne();
+
+    if (talent.thumbnail && talent.introVideo) {
+      await deleteMultipleMedia([talent.thumbnail, talent.introVideo]);
+    } else if (talent.thumbnail) {
+      await deleteMedia(talent.thumbnail);
+    } else if (talent.introVideo) {
+      await deleteMedia(talent.introVideo);
+    }
 
     return res.status(200).json({ msg: `Entry for ${name} is removed` });
   } catch (error) {
