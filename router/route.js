@@ -11,6 +11,7 @@ import * as filtersController from "../controllers/filters.js";
 import * as talentsController from "../controllers/talents.js";
 import * as usersController from "../controllers/users.js";
 import * as projectsController from "../controllers/projects.js";
+import * as bookmarksController from "../controllers/bookmark.controller.js";
 
 // ===========================  AUTH Routes ================================
 
@@ -68,7 +69,6 @@ router.route("/user").put(Auth, usersController.updateOneUser); // Update User
 router.route("/user").delete(Auth, usersController.deleteOneUser); // All User
 
 // ===========================  Talent Routes ================================
-
 // GET
 router.route("/talents").get(talentsController.getTalents); // All Talents
 router.route("/talentfilters").get(talentsController.getTalentsNameAndId); // All Talents Only Names
@@ -81,7 +81,6 @@ router.route("/talents/:name").delete(talentsController.deleteOneTalent); // Del
 router.route("/talents/:name").put(talentsController.updateOneTalent); // Update One Talent
 
 // ===========================  Project Routes ================================
-
 // POST
 router.route("/project").post(projectsController.createProjects); // Projects
 // GET
@@ -94,5 +93,15 @@ router
 router.route("/project/:title").put(projectsController.updateOneProject); // Update One project
 // DELETE
 router.route("/project/:title").delete(projectsController.deleteOneProject); // Delete One project
+
+// ===========================  Bookmark Routes ================================
+// POST
+router.route("/bookmarks").post(Auth, bookmarksController.createbookmark); // Get bookmarks
+
+// GET
+
+// PUT
+
+// DELETE
 
 export default router;

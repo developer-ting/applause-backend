@@ -1,16 +1,16 @@
 // Models
 import TalentModel from "../model/talent.model.js";
 import LanguageModel from "../model/language.model.js";
+
+// Plugins
+
+// Utils
 import {
   defaultConfig,
   deleteMedia,
   deleteMultipleMedia,
   storeMediaToDB,
 } from "../utils/index.js";
-
-// Plugins
-
-// Utils
 
 // ===================== GET ===================
 
