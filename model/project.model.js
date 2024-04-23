@@ -1,9 +1,16 @@
 import mongoose from "mongoose";
 
-const CharacterSchema = new mongoose.Schema({
-  name: String,
-  type: String,
-});
+// const CharacterSchema = new mongoose.Schema({
+//   characterName: String,
+//   characterType: {
+//     type: String,
+//     enum: ["Primary", "Secondary", "Tertiary"],
+//   },
+//   auditions: {
+//     type: [String],
+//     ref: "Audition",
+//   },
+// });
 
 export const ProjectsSchema = new mongoose.Schema({
   title: {
@@ -43,7 +50,19 @@ export const ProjectsSchema = new mongoose.Schema({
   email: {
     type: String,
   },
-  characters: [CharacterSchema],
+  characters: [
+    {
+      characterName: String,
+      characterType: {
+        type: String,
+        enum: ["Primary", "Secondary", "Tertiary"],
+      },
+      auditions: {
+        type: String,
+        ref: "Audition",
+      },
+    },
+  ],
   genre: {
     type: [String],
     ref: "Genre",

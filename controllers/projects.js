@@ -1,5 +1,11 @@
 // Models
 import ProjectsSchema from "../model/project.model.js";
+import {
+  defaultConfig,
+  deleteMedia,
+  deleteMultipleMedia,
+  storeMediaToDB,
+} from "../utils/index.js";
 
 // ===================== POST ===================
 
@@ -32,22 +38,42 @@ import ProjectsSchema from "../model/project.model.js";
 
 */
 
+// All Projects
 export async function createProjects(req, res) {
+  const data = req.body;
+  const { title } = req.body;
+  let media = {};
   try {
-    const response = req.body;
-    await ProjectsSchema.create(response);
-    return res.status(200).json({ response });
+    const existingProject = await ProjectsSchema.findOne({ title });
+
+    if (existingProject) {
+      return res.status(409).json({ error: "Project already exists" });
+    }
+
+    if (req.files) {
+      if (req.files.thumbnail) {
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      }
+    }
+
+    await ProjectsSchema.create({ ...data, ...media });
+
+    return res.status(200).json({ ...data, ...media });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ msg: "message not delivered" });
+    return res.status(500).json({ msg: "Something went wrong!", error });
   }
 }
 
 /** GET: http://localhost:8080/api/project */
 
-export async function fetchProjects(req, res) {
+// Get project All
+export async function getProjects(req, res) {
   try {
-    const projects = await ProjectsSchema.find().populate("genre");
+    const projects = await ProjectsSchema.find().populate(
+      "genre characters.auditions"
+    );
+    // .populate("characters.auditions");
     return res.status(200).json({ projects });
   } catch (error) {
     console.log(error);
@@ -61,7 +87,9 @@ export async function fetchProjects(req, res) {
   "skip" : 0,
 }
 */
-export async function fetchAllProjectsOnlyNameAndId(req, res) {
+
+// All project Only Names
+export async function getProjectsNameAndId(req, res) {
   try {
     // const { title } = req.query;
     const projects = await ProjectsSchema.find()
@@ -78,7 +106,7 @@ export async function fetchAllProjectsOnlyNameAndId(req, res) {
 /** GET: http://localhost:8080/api/project/Rupesh
  * @param : {}
  */
-export async function fetchProject(req, res) {
+export async function getProject(req, res) {
   try {
     const { title } = req.params;
 
@@ -125,20 +153,29 @@ export async function fetchProject(req, res) {
 }
 
 */
+
+// Update One project
 export async function updateOneProject(req, res) {
+  const { title } = req.params;
+  const data = req.body;
+  let media = {};
+  const project = await ProjectsSchema.findOne({ title });
   try {
-    const { title } = req.params;
-    const data = req.body;
-
-    const project = await ProjectsSchema.findOne({ title });
-
     if (!project) {
       return res
         .status(404)
         .json({ error: "project not found!, Please provide correct Name" });
     }
 
-    await ProjectsSchema.updateOne({ title }, data);
+    if (req.files) {
+      if (req.files.thumbnail) {
+        await deleteMedia(project.thumbnail);
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      }
+    }
+
+    await ProjectsSchema.updateOne({ title }, { ...data, ...media });
 
     return res.status(200).json({ msg: `Record updated for ${title}` });
   } catch (error) {
@@ -152,6 +189,8 @@ export async function updateOneProject(req, res) {
 /** DELETE: http://localhost:8080/api/project/asd1d
  * @param : {}
  */
+
+// Delete One project
 export async function deleteOneProject(req, res) {
   try {
     const { title } = req.params;
@@ -162,11 +201,19 @@ export async function deleteOneProject(req, res) {
       return res.status(404).json({ error: "project not found!" });
     }
 
+    if (project.thumbnail && project.introVideo) {
+      await deleteMultipleMedia([project.thumbnail, project.introVideo]);
+    } else if (project.thumbnail) {
+      await deleteMedia(project.thumbnail);
+    } else if (project.introVideo) {
+      await deleteMedia(project.introVideo);
+    }
+
     await ProjectsSchema.findOne({ title }).deleteOne();
 
     return res.status(200).json({ msg: `Entry for ${title} is removed` });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "Something went wrong!", error });
+    return res.status(500).json({ msg: "Something went wrong 1!", error });
   }
 }

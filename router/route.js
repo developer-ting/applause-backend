@@ -11,6 +11,7 @@ import * as filtersController from "../controllers/filters.js";
 import * as talentsController from "../controllers/talents.js";
 import * as usersController from "../controllers/users.js";
 import * as projectsController from "../controllers/projects.js";
+import * as auditionController from "../controllers/audition.js";
 
 // ===========================  AUTH Routes ================================
 
@@ -82,17 +83,28 @@ router.route("/talents/:name").put(talentsController.updateOneTalent); // Update
 
 // ===========================  Project Routes ================================
 
-// POST
-router.route("/project").post(projectsController.createProjects); // Projects
 // GET
-router.route("/project").get(projectsController.fetchProjects); // Get project All
-router.route("/project/:title").get(projectsController.fetchProject); // One project
-router
-  .route("/projectfilters")
-  .get(projectsController.fetchAllProjectsOnlyNameAndId); // All project Only Names
-// PUT
-router.route("/project/:title").put(projectsController.updateOneProject); // Update One project
+router.route("/project").get(projectsController.getProjects); // Get project All
+router.route("/projectfilters").get(projectsController.getProjectsNameAndId); // All project Only Names
+router.route("/project/:title").get(projectsController.getProject); // One project
+// POST
+router.route("/project").post(projectsController.createProjects); // All Projects
 // DELETE
 router.route("/project/:title").delete(projectsController.deleteOneProject); // Delete One project
+// PUT
+router.route("/project/:title").put(projectsController.updateOneProject); // Update One project
+
+// ===========================  Audition Routes ================================
+
+//POST
+router.route("/audition").post(auditionController.createAudition); // All audition
+//GET
+router.route("/audition").get(auditionController.getAudition); // All audition
+// PUT
+router.route("/audition/:characterName").put(auditionController.updateAudition); // Update audition
+// DELETE
+router
+  .route("/audition/:characterName")
+  .delete(auditionController.deleteAudition); // Delete One audition
 
 export default router;
