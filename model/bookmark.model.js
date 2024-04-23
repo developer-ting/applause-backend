@@ -7,12 +7,13 @@ export const BookmarkSchema = new mongoose.Schema(
       {
         type: {
           type: String,
-          enum: ["Profile", "Video", "Image", "Talent", "Audition"],
+          enum: ["Media", "Talent", "Audition", "Project"],
           required: true,
         },
-        id: {
+        itemId: {
           type: String,
           required: true,
+          refPath: "items.type",
         },
       },
     ],

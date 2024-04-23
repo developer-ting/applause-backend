@@ -8,8 +8,72 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 // Utils
+import { defaultConfig } from "../utils/index.js";
 
 // ===================== GET ===================
+/** GET: http://localhost:8080/api/bookmarks 
+ * @param : {
+  "limit" : 10,
+  "skip" : 0,
+  "type": "Media"
+}
+*/
+export async function getBookmarks(req, res) {
+  try {
+    const { limit, skip, type } = req.query;
+    let query = {};
+
+    if (type) {
+      query["items.type"] = type;
+    }
+
+    let bookmarks = await BookmarkModel.find(query)
+      .limit(limit || defaultConfig.fetchLimit)
+      .skip(skip || 0);
+
+    // Filter populated items to include only those of the specified type
+    if (type) {
+      bookmarks = bookmarks.map((bookmark) => {
+        bookmark.items = bookmark.items.filter((item) => item.type === type);
+        return bookmark;
+      });
+    }
+
+    return res.status(200).json({ bookmarks });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Failed to retrieve bookmarks" });
+  }
+}
+
+/** GET: http://localhost:8080/api/bookmarks/Ting1 
+ * @param : {
+  "type": "Media"
+}
+*/
+export async function getBookmark(req, res) {
+  try {
+    const { name } = req.params;
+    const { type } = req.query;
+
+    let bookmarks = await BookmarkModel.findOne({ name }).populate(
+      "items.itemId"
+    );
+
+    // Filter populated items to include only those of the specified type
+    if (type) {
+      bookmarks = {
+        ...bookmarks,
+        items: bookmarks.items.filter((item) => item.type === type),
+      };
+    }
+
+    return res.status(200).json({ bookmarks });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Failed to retrieve bookmarks" });
+  }
+}
 
 // ===================== POST ===================
 
@@ -76,5 +140,47 @@ export async function createbookmark(req, res) {
 }
 
 // ===================== PUT ===================
+
+/** PUT: http://localhost:8080/api/bookmarks/test
+ * @body : {
+    "type": "Video",
+    "id": "660bb2a0038d622b96ff40d4",
+}
+*/
+export async function addToBookmark(req, res) {
+  try {
+    const { name } = req.params;
+    const { type, id } = req.body;
+
+    const bookmark = await BookmarkModel.findOne({ name });
+
+    if (!bookmark) {
+      return res
+        .status(404)
+        .json({ error: "Bookmark not found!, Please provide correct Name" });
+    }
+
+    // Check if the entry already exists in the items array
+    const existingIndex = bookmark.items.findIndex(
+      (item) => item.type === type && item.id === id
+    );
+
+    if (existingIndex !== -1) {
+      await BookmarkModel.updateOne(
+        { name }, // Query criteria
+        { $pull: { items: { type, id } } }
+      );
+
+      return res.status(200).json({ msg: `Record updated for ${name}` });
+    }
+
+    await BookmarkModel.updateOne({ name }, { $push: { items: { type, id } } });
+
+    return res.status(200).json({ msg: `Record updated for ${name}` });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Something went wrong!", error });
+  }
+}
 
 // ===================== DELETE ===================
