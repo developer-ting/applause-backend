@@ -12,6 +12,7 @@ import * as talentsController from "../controllers/talents.js";
 import * as usersController from "../controllers/users.js";
 import * as projectsController from "../controllers/projects.js";
 import * as auditionController from "../controllers/audition.js";
+import * as bookmarksController from "../controllers/bookmark.controller.js";
 
 // ===========================  AUTH Routes ================================
 
@@ -69,7 +70,6 @@ router.route("/user").put(Auth, usersController.updateOneUser); // Update User
 router.route("/user").delete(Auth, usersController.deleteOneUser); // All User
 
 // ===========================  Talent Routes ================================
-
 // GET
 router.route("/talents").get(talentsController.getTalents); // All Talents
 router.route("/talentfilters").get(talentsController.getTalentsNameAndId); // All Talents Only Names
@@ -83,6 +83,8 @@ router.route("/talents/:name").put(talentsController.updateOneTalent); // Update
 
 // ===========================  Project Routes ================================
 
+// POST
+router.route("/project").post(projectsController.createProjects); // Projects
 // GET
 router.route("/project").get(projectsController.getProjects); // Get project All
 router.route("/projectfilters").get(projectsController.getProjectsNameAndId); // All project Only Names
@@ -106,5 +108,18 @@ router.route("/audition/:characterName").put(auditionController.updateAudition);
 router
   .route("/audition/:characterName")
   .delete(auditionController.deleteAudition); // Delete One audition
+
+// ===========================  Bookmark Routes ================================
+// POST
+router.route("/bookmarks").post(Auth, bookmarksController.createbookmark); // Get bookmarks
+
+// GET
+router.route("/bookmarks").get(bookmarksController.getBookmarks); // All Bookmarks
+router.route("/bookmarks/:name").get(bookmarksController.getBookmark); // Get one bookmark
+
+// PUT
+router.route("/bookmarks/:name").put(bookmarksController.addToBookmark); // Add/Remove Item from Bookmark
+
+// DELETE
 
 export default router;

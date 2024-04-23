@@ -15,7 +15,7 @@ export const UserSchema = new mongoose.Schema({
   },
   profile: { type: String },
   phone: { type: String },
-  bookmarks: { type: [String] },
+  bookmarks: { type: [String], ref: "Bookmark" },
 });
 
 export default mongoose.model.Users || mongoose.model("User", UserSchema);

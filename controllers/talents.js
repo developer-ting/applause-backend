@@ -1,16 +1,16 @@
 // Models
 import TalentModel from "../model/talent.model.js";
 import LanguageModel from "../model/language.model.js";
+
+// Plugins
+
+// Utils
 import {
   defaultConfig,
   deleteMedia,
   deleteMultipleMedia,
   storeMediaToDB,
 } from "../utils/index.js";
-
-// Plugins
-
-// Utils
 
 // ===================== GET ===================
 
@@ -83,6 +83,7 @@ export async function getTalents(req, res) {
     }
 
     const talents = await TalentModel.find(query)
+      .populate("introVideo thumbnail")
       .limit(limit || defaultConfig.fetchLimit)
       .skip(skip || 0);
 
@@ -121,7 +122,9 @@ export async function getTalent(req, res) {
   try {
     const { name } = req.params;
 
-    const talent = await TalentModel.findOne({ name });
+    const talent = await TalentModel.findOne({ name }).populate(
+      "introVideo thumbnail"
+    );
 
     if (!talent) {
       return res.status(404).json({ error: "Talent not found!" });
@@ -166,18 +169,22 @@ export async function createTalent(req, res) {
     if (req.files) {
       if (req.files.thumbnail && req.files.introVideo) {
         await Promise.all([
-          storeMediaToDB(req.files.thumbnail),
-          storeMediaToDB(req.files.introVideo),
+          storeMediaToDB(req.files.thumbnail, "Image", name),
+          storeMediaToDB(req.files.introVideo, "Video", name),
         ]).then((values) => {
-          media.thumbnail = values[0].url;
-          media.introVideo = values[1].url;
+          media.thumbnail = values[0]._id;
+          media.introVideo = values[1]._id;
         });
       } else if (req.files.thumbnail) {
-        const result = await storeMediaToDB(req.files.thumbnail);
-        media.thumbnail = result.url;
+        const result = await storeMediaToDB(req.files.thumbnail, "Image", name);
+        media.thumbnail = result._id;
       } else if (req.files.introVideo) {
-        const result = await storeMediaToDB(req.files.introVideo);
-        media.introVideo = result.url;
+        const result = await storeMediaToDB(
+          req.files.introVideo,
+          "Video",
+          name
+        );
+        media.introVideo = result._id;
       }
     }
 
@@ -185,6 +192,7 @@ export async function createTalent(req, res) {
 
     return res.status(200).json({ ...data, ...media });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ msg: "Something went wrong!", error });
   }
 }
@@ -210,7 +218,9 @@ export async function updateOneTalent(req, res) {
 
     let media = {};
 
-    const talent = await TalentModel.findOne({ name });
+    const talent = await TalentModel.findOne({ name }).populate(
+      "introVideo thumbnail"
+    );
 
     if (!talent) {
       return res
@@ -222,20 +232,24 @@ export async function updateOneTalent(req, res) {
       if (req.files.thumbnail && req.files.introVideo) {
         await deleteMultipleMedia([talent.thumbnail, talent.introVideo]);
         await Promise.all([
-          storeMediaToDB(req.files.thumbnail),
-          storeMediaToDB(req.files.introVideo),
+          storeMediaToDB(req.files.thumbnail, "Image", name),
+          storeMediaToDB(req.files.introVideo, "Video", name),
         ]).then((values) => {
-          media.thumbnail = values[0].url;
-          media.introVideo = values[1].url;
+          media.thumbnail = values[0]._id;
+          media.introVideo = values[1]._id;
         });
       } else if (req.files.thumbnail) {
         await deleteMedia(talent.thumbnail);
-        const result = await storeMediaToDB(req.files.thumbnail);
-        media.thumbnail = result.url;
+        const result = await storeMediaToDB(req.files.thumbnail, "Image", name);
+        media.thumbnail = result._id;
       } else if (req.files.introVideo) {
         await deleteMedia(talent.introVideo);
-        const result = await storeMediaToDB(req.files.introVideo);
-        media.introVideo = result.url;
+        const result = await storeMediaToDB(
+          req.files.introVideo,
+          "Video",
+          name
+        );
+        media.introVideo = result._id;
       }
     }
 
