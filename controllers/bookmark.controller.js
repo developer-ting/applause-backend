@@ -23,20 +23,34 @@ export async function getBookmarks(req, res) {
     const { limit, skip, type } = req.query;
     let query = {};
 
+    // Check if type parameter is provided and split it into an array
+    const typesArray = type ? type.split(",") : [];
+
     if (type) {
-      query["items.type"] = type;
+      query["items.type"] = typesArray[0];
     }
 
     let bookmarks = await BookmarkModel.find(query)
+      .populate("items.itemId")
       .limit(limit || defaultConfig.fetchLimit)
       .skip(skip || 0);
 
     // Filter populated items to include only those of the specified type
     if (type) {
-      bookmarks = bookmarks.map((bookmark) => {
-        bookmark.items = bookmark.items.filter((item) => item.type === type);
-        return bookmark;
-      });
+      // Filter items based on the type parameter
+      if (typesArray.length > 1) {
+        bookmarks = bookmarks.map((bookmark) => {
+          bookmark.items = bookmark.items.filter((item) =>
+            typesArray.includes(item.itemId.type)
+          );
+          return bookmark;
+        });
+      } else {
+        bookmarks = bookmarks.map((bookmark) => {
+          bookmark.items = bookmark.items.filter((item) => item.type === type);
+          return bookmark;
+        });
+      }
     }
 
     return res.status(200).json({ bookmarks });
