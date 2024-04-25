@@ -205,3 +205,24 @@ export async function addToBookmark(req, res) {
 }
 
 // ===================== DELETE ===================
+/** DELETE: http://localhost:8080/api/bookmarks/test
+ * @param : {}
+ */
+export async function deleteBookmark(req, res) {
+  try {
+    const { name } = req.params;
+
+    const bookmark = await BookmarkModel.findOne({ name });
+
+    if (!bookmark) {
+      return res.status(404).json({ error: "bookmark not found!" });
+    }
+
+    await BookmarkModel.findOne({ name }).deleteOne();
+
+    return res.status(200).json({ msg: `Entry for ${name} is removed` });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Something went wrong!", error });
+  }
+}
