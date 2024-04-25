@@ -4,8 +4,8 @@ export const TalentSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
     birthYear: { type: Number, required: true },
-    thumbnail: { type: String, required: true },
-    introVideo: { type: String, required: true },
+    thumbnail: { type: String, required: true, ref: "Media" },
+    introVideo: { type: String, required: true, ref: "Media" },
     gender: { type: String, required: true, enum: ["Male", "Female"] },
     height: { type: Number, required: true },
     email: { type: String, required: true },
