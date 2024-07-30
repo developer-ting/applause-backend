@@ -63,6 +63,8 @@ router.route("/skills/:title").delete(filtersController.deleteSkills); // Delete
 // ===========================  User Routes ================================
 // GET
 router.route("/user").get(Auth, usersController.fetchOneUser); // Get User
+// GET
+router.route("/users").get(Auth, usersController.fetchAllUser); // Get User
 // PUT
 router.route("/user").put(Auth, usersController.updateOneUser); // Update User
 // DELETE
