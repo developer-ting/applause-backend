@@ -51,7 +51,7 @@ export async function fetchOneUser(req, res) {
  * @param : {
      "Authentication" : "Bearer ${token}",
   }
- */
+*/
 export async function fetchAllUser(req, res) {
   try {
     // if in-correct or no token return status 500
@@ -121,6 +121,23 @@ export async function updateOneUser(req, res) {
       const email = decoded.email;
       const { password, ...data } = req.body;
 
+      let media = {};
+
+      if (req.files) {
+        if (req.files.profile) {
+          await Promise.all([
+            storeMediaToDB(
+              req.files.profile,
+              "Image",
+              `${firstname}${lastname}`
+            ),
+          ]).then((values) => {
+            console.log(values);
+            media.profile = values[0].media;
+          });
+        }
+      }
+
       const user = await UserModel.findOne({ email });
 
       if (!user) {
@@ -129,7 +146,7 @@ export async function updateOneUser(req, res) {
           .json({ error: "User not found!, Please provide correct Email" });
       }
 
-      await UserModel.updateOne({ email }, data);
+      await UserModel.updateOne({ email }, { ...data, ...media });
 
       return res.status(200).json({ msg: `Record updated for ${email}` });
     });
