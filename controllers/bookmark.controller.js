@@ -23,20 +23,34 @@ export async function getBookmarks(req, res) {
     const { limit, skip, type } = req.query;
     let query = {};
 
+    // Check if type parameter is provided and split it into an array
+    const typesArray = type ? type.split(",") : [];
+
     if (type) {
-      query["items.type"] = type;
+      query["items.type"] = typesArray[0];
     }
 
     let bookmarks = await BookmarkModel.find(query)
+      .populate("items.itemId")
       .limit(limit || defaultConfig.fetchLimit)
       .skip(skip || 0);
 
     // Filter populated items to include only those of the specified type
     if (type) {
-      bookmarks = bookmarks.map((bookmark) => {
-        bookmark.items = bookmark.items.filter((item) => item.type === type);
-        return bookmark;
-      });
+      // Filter items based on the type parameter
+      if (typesArray.length > 1) {
+        bookmarks = bookmarks.map((bookmark) => {
+          bookmark.items = bookmark.items.filter((item) =>
+            typesArray.includes(item.itemId.type)
+          );
+          return bookmark;
+        });
+      } else {
+        bookmarks = bookmarks.map((bookmark) => {
+          bookmark.items = bookmark.items.filter((item) => item.type === type);
+          return bookmark;
+        });
+      }
     }
 
     return res.status(200).json({ bookmarks });
@@ -60,12 +74,16 @@ export async function getBookmark(req, res) {
       "items.itemId"
     );
 
-    // Filter populated items to include only those of the specified type
-    if (type) {
-      bookmarks = {
-        ...bookmarks,
-        items: bookmarks.items.filter((item) => item.type === type),
-      };
+    // Check if type parameter is provided and split it into an array
+    const typesArray = type ? type.split(",") : [];
+
+    // Filter items based on the type parameter
+    if (typesArray.length > 1) {
+      bookmarks.items = bookmarks.items.filter((item) =>
+        typesArray.includes(item.itemId.type)
+      );
+    } else {
+      bookmarks.items = bookmarks.items.filter((item) => item.type === type);
     }
 
     return res.status(200).json({ bookmarks });
@@ -150,7 +168,7 @@ export async function createbookmark(req, res) {
 export async function addToBookmark(req, res) {
   try {
     const { name } = req.params;
-    const { type, id } = req.body;
+    const { type, itemId } = req.body;
 
     const bookmark = await BookmarkModel.findOne({ name });
 
@@ -162,19 +180,22 @@ export async function addToBookmark(req, res) {
 
     // Check if the entry already exists in the items array
     const existingIndex = bookmark.items.findIndex(
-      (item) => item.type === type && item.id === id
+      (item) => item.type === type && item.itemId === itemId
     );
 
     if (existingIndex !== -1) {
       await BookmarkModel.updateOne(
         { name }, // Query criteria
-        { $pull: { items: { type, id } } }
+        { $pull: { items: { type, itemId } } }
       );
 
       return res.status(200).json({ msg: `Record updated for ${name}` });
     }
 
-    await BookmarkModel.updateOne({ name }, { $push: { items: { type, id } } });
+    await BookmarkModel.updateOne(
+      { name },
+      { $push: { items: { type, itemId } } }
+    );
 
     return res.status(200).json({ msg: `Record updated for ${name}` });
   } catch (error) {
@@ -184,3 +205,24 @@ export async function addToBookmark(req, res) {
 }
 
 // ===================== DELETE ===================
+/** DELETE: http://localhost:8080/api/bookmarks/test
+ * @param : {}
+ */
+export async function deleteBookmark(req, res) {
+  try {
+    const { name } = req.params;
+
+    const bookmark = await BookmarkModel.findOne({ name });
+
+    if (!bookmark) {
+      return res.status(404).json({ error: "bookmark not found!" });
+    }
+
+    await BookmarkModel.findOne({ name }).deleteOne();
+
+    return res.status(200).json({ msg: `Entry for ${name} is removed` });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Something went wrong!", error });
+  }
+}
