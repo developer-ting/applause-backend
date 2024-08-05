@@ -38,8 +38,35 @@ import {
 
 */
 
-// All Projects
+// Create Projects
 export async function createProjects(req, res) {
+  const data = req.body;
+  const { title } = req.body;
+  let media = {};
+  try {
+    const existingProject = await ProjectsSchema.findOne({ title });
+
+    if (existingProject) {
+      return res.status(409).json({ error: "Project already exists" });
+    }
+
+    if (req.files) {
+      if (req.files.thumbnail) {
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      }
+    }
+
+    await ProjectsSchema.create({ ...data, ...media });
+
+    return res.status(200).json({ ...data, ...media });
+  } catch (error) {
+    return res.status(500).json({ msg: "Something went wrong!", error });
+  }
+}
+
+// Create Projects Audition
+export async function createProjectsAudition(req, res) {
   const data = req.body;
   const { title } = req.body;
   let media = {};
@@ -74,6 +101,19 @@ export async function getProjects(req, res) {
       "genre characters.auditions"
     );
     // .populate("characters.auditions");
+    return res.status(200).json({ projects });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ msg: "Failed to retrieve genres" });
+  }
+}
+
+// Get project All Audition
+export async function getProjectsAudition(req, res) {
+  try {
+    const projects = await ProjectsSchema.find()
+      .select("characters")
+      .populate("characters.auditions");
     return res.status(200).json({ projects });
   } catch (error) {
     console.log(error);

@@ -58,7 +58,7 @@ export const ProjectsSchema = new mongoose.Schema({
         enum: ["Primary", "Secondary", "Tertiary"],
       },
       auditions: {
-        type: String,
+        type: [String],
         ref: "Audition",
       },
     },

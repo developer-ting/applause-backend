@@ -85,8 +85,12 @@ router.route("/talents/:name").put(talentsController.updateOneTalent); // Update
 
 // POST
 router.route("/project").post(projectsController.createProjects); // Projects
+router
+  .route("/projectAudition")
+  .post(projectsController.createProjectsAudition); // Projects Audition
 // GET
 router.route("/project").get(projectsController.getProjects); // Get project All
+router.route("/projectAudition").get(projectsController.getProjectsAudition); // Get project All Audition
 router.route("/projectfilters").get(projectsController.getProjectsNameAndId); // All project Only Names
 router.route("/project/:title").get(projectsController.getProject); // One project
 // POST
