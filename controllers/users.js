@@ -3,12 +3,20 @@ import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 dotenv.config();
 
+// Utils
+import {
+  defaultConfig,
+  deleteMedia,
+  deleteMultipleMedia,
+  storeMediaToDB,
+} from "../utils/index.js";
+
 // Models
 import UserModel from "../model/user.model.js";
 
 // ===================== GET ===================
 
-/** GET: http://localhost:8080/api/user
+/** GET: http://localhost:8080/api/user?email=pogilok267a@pursip.com
  * @param : {
      "Authentication" : "Bearer ${token}",
   }
@@ -31,7 +39,11 @@ export async function fetchOneUser(req, res) {
       }
 
       // Token is valid, and 'decoded' contains the payload
-      const email = decoded.email;
+      const email = req.query?.email;
+
+      if (!email) {
+        return res.status(404).json({ error: "Provide email address" });
+      }
 
       const user = await UserModel.findOne({ email });
 
@@ -90,7 +102,7 @@ export async function fetchAllUser(req, res) {
 
 // ===================== PUT ===================
 
-/** PUT: http://localhost:8080/api/user
+/** PUT: http://localhost:8080/api/user?email=pogilok267a@pursip.com
  * @body : {
     "firstname": "Ting",
     "lastname": "Works",
@@ -118,7 +130,12 @@ export async function updateOneUser(req, res) {
       }
 
       // Token is valid, and 'decoded' contains the payload
-      const email = decoded.email;
+      const email = req.query?.email;
+
+      if (!email) {
+        return res.status(404).json({ error: "Provide email address" });
+      }
+      const user = await UserModel.findOne({ email });
       const { password, ...data } = req.body;
 
       let media = {};
@@ -129,7 +146,7 @@ export async function updateOneUser(req, res) {
             storeMediaToDB(
               req.files.profile,
               "Image",
-              `${firstname}${lastname}`
+              `${user.firstname}${user.lastname}`
             ),
           ]).then((values) => {
             console.log(values);
@@ -137,8 +154,6 @@ export async function updateOneUser(req, res) {
           });
         }
       }
-
-      const user = await UserModel.findOne({ email });
 
       if (!user) {
         return res
