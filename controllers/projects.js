@@ -7,6 +7,14 @@ import jwt from "jsonwebtoken";
 import * as dotenv from "dotenv";
 dotenv.config();
 
+// UTILS
+import {
+  defaultConfig,
+  deleteMedia,
+  deleteMultipleMedia,
+  storeMediaToDB,
+} from "../utils/index.js";
+
 // ===================== POST ===================
 
 /** POST: http://localhost:8080/api/project 
@@ -29,7 +37,9 @@ dotenv.config();
 
 */
 
+// Create Projects
 export async function createProjects(req, res) {
+  let media = {};
   try {
     const response = req.body;
     const { title } = req.body;
@@ -55,16 +65,51 @@ export async function createProjects(req, res) {
           throw err;
         }
 
-        await ProjectsSchema.create(response);
-        return res.status(200).json(response);
+        if (req.files) {
+          if (req.files.thumbnail) {
+            const result = await storeMediaToDB(req.files.thumbnail);
+            media.thumbnail = result.url;
+          }
+        }
+
+        const data = { ...response, ...media };
+
+        await ProjectsSchema.create(data);
+        return res.status(200).json(data);
       });
     } catch (error) {
       console.log(error);
       return res.status(500).json({ msg: "Something went wrong!", error });
     }
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ msg: "message not delivered" });
+    return res.status(500).json({ msg: "Something went wrong!", error });
+  }
+}
+
+// Create Projects Audition
+export async function createProjectsAudition(req, res) {
+  const data = req.body;
+  const { title } = req.body;
+  let media = {};
+  try {
+    const existingProject = await ProjectsSchema.findOne({ title });
+
+    if (existingProject) {
+      return res.status(409).json({ error: "Project already exists" });
+    }
+
+    if (req.files) {
+      if (req.files.thumbnail) {
+        const result = await storeMediaToDB(req.files.thumbnail);
+        media.thumbnail = result.url;
+      }
+    }
+
+    await ProjectsSchema.create({ ...data, ...media });
+
+    return res.status(200).json({ ...data, ...media });
+  } catch (error) {
+    return res.status(500).json({ msg: "Something went wrong!", error });
   }
 }
 
@@ -72,7 +117,8 @@ export async function createProjects(req, res) {
 
 /** GET: http://localhost:8080/api/project */
 
-export async function fetchProjects(req, res) {
+// Get project All
+export async function getProjects(req, res) {
   try {
     if (!req.headers.authorization)
       return res.status(500).send({ error: "Please provide correct token" });
@@ -110,7 +156,9 @@ export async function fetchProjects(req, res) {
   "skip" : 0,
 }
 */
-export async function fetchAllProjectsOnlyNameAndId(req, res) {
+
+// All project Only Names
+export async function getProjectsNameAndId(req, res) {
   try {
     // const { title } = req.query;
 
@@ -148,7 +196,7 @@ export async function fetchAllProjectsOnlyNameAndId(req, res) {
 /** GET: http://localhost:8080/api/project/Rupesh
  * @param : {}
  */
-export async function fetchProject(req, res) {
+export async function getProject(req, res) {
   try {
     const { title } = req.params;
 
@@ -215,10 +263,15 @@ export async function fetchProject(req, res) {
 }
 
 */
+
+// Update One project
 export async function updateOneProject(req, res) {
+  const { title } = req.params;
+  let media = {};
+  const project = await ProjectsSchema.findOne({ title });
   try {
     const { title } = req.params;
-    const data = req.body;
+    const body = req.body;
 
     if (!req.headers.authorization)
       return res.status(500).send({ error: "Please provide correct token" });
@@ -240,6 +293,16 @@ export async function updateOneProject(req, res) {
             .status(404)
             .json({ error: "project not found!, Please provide correct Name" });
         }
+
+        if (req.files) {
+          if (req.files.thumbnail) {
+            const result = await storeMediaToDB(req.files.thumbnail);
+            media.thumbnail = result.url;
+          }
+        }
+
+        const data = { ...body, ...media };
+
         await ProjectsSchema.updateOne({ title }, data);
         return res.status(200).json({ msg: `Record updated for ${title}` });
       });
@@ -258,6 +321,8 @@ export async function updateOneProject(req, res) {
 /** DELETE: http://localhost:8080/api/project/asd1d
  * @param : {}
  */
+
+// Delete One project
 export async function deleteOneProject(req, res) {
   try {
     const { title } = req.params;
@@ -280,7 +345,13 @@ export async function deleteOneProject(req, res) {
         if (!project) {
           return res.status(404).json({ error: "project not found!" });
         }
+
+        if (project.thumbnail) {
+          await deleteMedia(project.thumbnail);
+        }
+
         await ProjectsSchema.findOne({ title }).deleteOne();
+
         return res.status(200).json({ msg: `Entry for ${title} is removed` });
       });
     } catch (error) {
@@ -289,6 +360,6 @@ export async function deleteOneProject(req, res) {
     }
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "Something went wrong!", error });
+    return res.status(500).json({ msg: "Something went wrong 1!", error });
   }
 }
