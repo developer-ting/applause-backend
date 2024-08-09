@@ -1,10 +1,5 @@
 import mongoose from "mongoose";
 
-const CharacterSchema = new mongoose.Schema({
-  name: String,
-  type: String,
-});
-
 export const ProjectsSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -20,7 +15,7 @@ export const ProjectsSchema = new mongoose.Schema({
   },
   releaseDate: {
     type: Date,
-    default: Date.now, // Optionally set a default value
+    default: Date.now,
   },
   cencorRating: {
     type: String,
@@ -43,12 +38,15 @@ export const ProjectsSchema = new mongoose.Schema({
   email: {
     type: String,
   },
-  characters: [CharacterSchema],
+  characters: {
+    type: [String],
+    ref: "Character",
+  },
   genre: {
     type: [String],
     ref: "Genre",
   },
 });
 
-export default mongoose.model.Genre ||
+export default mongoose.model.Projects ||
   mongoose.model("Project", ProjectsSchema);

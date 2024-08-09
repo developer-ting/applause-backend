@@ -6,5 +6,5 @@ export const PlatformSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model.Platform ||
+export default mongoose.model.Platforms ||
   mongoose.model("Platform", PlatformSchema);

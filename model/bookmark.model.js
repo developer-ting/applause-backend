@@ -21,5 +21,5 @@ export const BookmarkSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model.Talents ||
+export default mongoose.model.Bookmarks ||
   mongoose.model("Bookmark", BookmarkSchema);

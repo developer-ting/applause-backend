@@ -9,4 +9,4 @@ export const MediaSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model.Talents || mongoose.model("Media", MediaSchema);
+export default mongoose.model.Medias || mongoose.model("Media", MediaSchema);
