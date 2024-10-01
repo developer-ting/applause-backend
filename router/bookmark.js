@@ -5,7 +5,7 @@ const router = Router();
 import Auth from "../middlewares/auth.js";
 
 //  import all controllers
-import * as bookmarksController from "../controllers/bookmark.controller.js";
+import * as bookmarksController from "../controllers/bookmark.js";
 
 // POST
 router.route("/bookmarks").post(Auth, bookmarksController.createbookmark); // Get bookmarks
