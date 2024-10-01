@@ -10,7 +10,7 @@ export async function createCharacter(req, res) {
     return res.status(200).json({ response });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "message not delivered" });
+    return res.status(500).json({ msg: "Message not delivered" });
   }
 }
 
@@ -18,10 +18,10 @@ export async function createCharacter(req, res) {
 export async function getCharacter(req, res) {
   try {
     const character = await CharacterModel.find();
-    return res.status(200).json({ audition });
+    return res.status(200).json({ character });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ msg: "Failed to retrieve audition" });
+    return res.status(500).json({ msg: "Failed to retrieve character" });
   }
 }
 
